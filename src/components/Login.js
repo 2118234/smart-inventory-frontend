@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const API_BASE = "https://shelf-sense-api.onrender.com"; // 🔁 UPDATE THIS
+// ✅ Use environment variable for API base URL
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -15,10 +16,16 @@ function Login() {
     e.preventDefault();
 
     try {
-      const res = await axios.post(`${API_BASE}/login`, { username, password });
+      const res = await axios.post(`${API_BASE_URL}/login`, {
+        username,
+        password,
+      });
 
       if (res.status === 200 && res.data.token) {
+        // ✅ Save token
         localStorage.setItem("token", res.data.token);
+
+        // ✅ Redirect to dashboard
         navigate("/dashboard");
       } else {
         setError("Login failed. Please try again.");
