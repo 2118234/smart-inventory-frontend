@@ -1,38 +1,20 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-// ✅ Use environment variable for API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
 
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/login`, {
-        username,
-        password,
-      });
+    // ✅ Skip backend request & set dummy token
+    localStorage.setItem("token", "dummy-token");
 
-      if (res.status === 200 && res.data.token) {
-        // ✅ Save token
-        localStorage.setItem("token", res.data.token);
-
-        // ✅ Redirect to dashboard
-        navigate("/dashboard");
-      } else {
-        setError("Login failed. Please try again.");
-      }
-    } catch (err) {
-      setError("Login failed. Please check your credentials.");
-    }
+    // ✅ Go straight to dashboard
+    navigate("/dashboard");
   };
 
   return (
@@ -46,12 +28,6 @@ function Login() {
         <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
           Login to Inventory
         </h2>
-
-        {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">
-            {error}
-          </p>
-        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <input
