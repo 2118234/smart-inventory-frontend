@@ -3,8 +3,12 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-// ✅ Use environment variable for API base URL
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:5000";
+// ✅ Automatically use Render backend in production
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://smart-inventory-backend-6a8w.onrender.com"
+    : "http://127.0.0.1:5000");
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -14,23 +18,23 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError('');
 
     try {
-      const res = await axios.post(`${API_BASE_URL}/login`, {
-        username,
-        password,
-      });
+      const res = await axios.post(
+        `${API_BASE_URL}/login`,
+        { username, password },
+        { withCredentials: true } // ✅ Allow cookies/session across domains
+      );
 
       if (res.status === 200 && res.data.token) {
-        // ✅ Save token
         localStorage.setItem("token", res.data.token);
-
-        // ✅ Redirect to dashboard
         navigate("/dashboard");
       } else {
         setError("Login failed. Please try again.");
       }
     } catch (err) {
+      console.error("Login error:", err);
       setError("Login failed. Please check your credentials.");
     }
   };
@@ -48,9 +52,7 @@ function Login() {
         </h2>
 
         {error && (
-          <p className="text-red-500 text-sm mb-4 text-center">
-            {error}
-          </p>
+          <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
         )}
 
         <form onSubmit={handleLogin} className="space-y-4">
