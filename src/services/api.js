@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://127.0.0.1:5000';
+// Use environment variable for flexibility
+// Falls back to localhost if not provided
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:5000';
 
 const getAxiosInstance = () => {
   const token = localStorage.getItem('token');
