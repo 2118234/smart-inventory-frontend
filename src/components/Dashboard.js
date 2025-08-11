@@ -35,24 +35,7 @@ function Dashboard() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/login');
-    } else {
-      axios
-        .get('http://localhost:5000/products', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((res) => setProducts(res.data))
-        .catch((err) => {
-          console.error(err);
-          localStorage.removeItem('token');
-          navigate('/login');
-        });
-    }
-  }, [navigate]);
-
+ 
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
