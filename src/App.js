@@ -5,6 +5,14 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
+// Example API call
+fetch(`${apiUrl}/products`)
+  .then(response => response.json())
+  .then(data => console.log(data));
+
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
