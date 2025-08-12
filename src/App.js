@@ -1,27 +1,66 @@
 import './App.css';
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Check token on load
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+  };
+
   return (
     <Router>
       <div className='container'>
         <h1>Smart Inventory System</h1>
         <Routes>
-          {/* Home route now directly loads dashboard */}
-          <Route path="/" element={<Dashboard />} />
+          {/* Home redirects based on auth state */}
+          <Route
+            path="/"
+            element={<Navigate to={isLoggedIn ? "/dashboard" : "/login"} />}
+          />
 
-          {/* Login route still exists if you ever need it */}
-          <Route path="/login" element={<Login />} />
+          {/* Login Route */}
+          <Route
+            path="/login"
+            element={
+              isLoggedIn ? <Navigate to="/dashboard" /> : <Login onLoginSuccess={handleLoginSuccess} />
+            }
+          />
 
-          {/* Register route still exists */}
-          <Route path="/register" element={<Register />} />
+          {/* Register Route */}
+          <Route
+            path="/register"
+            element={
+              isLoggedIn ? <Navigate to="/dashboard" /> : <Register />
+            }
+          />
 
-          {/* Dashboard route */}
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Dashboard Route */}
+          <Route
+            path="/dashboard"
+            element={
+              isLoggedIn ? (
+                <Dashboard onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/login" />
+              )
+            }
+          />
         </Routes>
       </div>
     </Router>

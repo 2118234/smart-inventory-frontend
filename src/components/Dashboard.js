@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Dashboard.css';
 import { Bar } from 'react-chartjs-2';
@@ -25,23 +26,46 @@ ChartJS.register(
 function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [newProduct, setNewProduct] = useState({ name: '', quantity: '', price: '' });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // No token check — just get products directly
-    axios
-      .get('http://localhost:5000/products')
-      .then((res) => setProducts(res.data))
-      .catch((err) => console.error(err));
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      axios
+        .get('http://localhost:5000/products', {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((res) => setProducts(res.data))
+        .catch((err) => {
+          console.error(err);
+          localStorage.removeItem('token');
+          navigate('/login');
+        });
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   const handleAddProduct = () => {
+    const token = localStorage.getItem('token');
     axios
-      .post('http://localhost:5000/products', { ...newProduct })
+      .post(
+        'http://localhost:5000/products',
+        { ...newProduct },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
       .then((res) => {
         setProducts([...products, res.data]);
         setShowAddModal(false);
@@ -51,8 +75,11 @@ function Dashboard() {
   };
 
   const handleDeleteProduct = () => {
+    const token = localStorage.getItem('token');
     axios
-      .delete(`http://localhost:5000/products/${selectedProduct?.id}`)
+      .delete(`http://localhost:5000/products/${selectedProduct?.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then(() => {
         setProducts(products.filter((p) => p.id !== selectedProduct?.id));
         setShowDeleteModal(false);
@@ -68,6 +95,7 @@ function Dashboard() {
   const filteredProducts = products.filter(product =>
     (product.name || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
 
   const chartData = {
     labels: products.map((p) => p.name),
@@ -115,6 +143,9 @@ function Dashboard() {
         >
           <FaTrash /> Delete
         </button>
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
       </aside>
 
       <main className="main-content">
@@ -140,11 +171,12 @@ function Dashboard() {
         <div className="search-bar">
           <FaSearch color="#6a0dad" />
           <input
-            type="text"
-            placeholder="Search product..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          type="text"
+          placeholder="Search product..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
           />
+
         </div>
 
         <section className="product-section">
